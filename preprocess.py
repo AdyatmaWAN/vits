@@ -1,6 +1,9 @@
 import argparse
 import text
 from utils import load_filepaths_and_text
+import os
+
+os.environ['LD_PRELOAD'] = '/lib/x86_64-linux-gnu/libespeak.so.1'
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
