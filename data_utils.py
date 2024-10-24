@@ -112,19 +112,19 @@ class TextAudioCollate():
         self.return_ids = return_ids
 
     def __call__(self, batch):
-        """Collate's training batch from normalized text and aduio
+        """Collate's training batch from normalized text and audio
         PARAMS
         ------
         batch: [text_normalized, spec_normalized, wav_normalized]
         """
-        # Right zero-pad all one-hot text sequences to max input length
+        # Sort by length (decreasing)
         _, ids_sorted_decreasing = torch.sort(
-            torch.LongTensor([x[1].size(1) for x in batch]),
+            torch.LongTensor([x[1].size(1) if x[1].dim() > 1 else 1 for x in batch]),
             dim=0, descending=True)
 
         max_text_len = max([len(x[0]) for x in batch])
-        max_spec_len = max([x[1].size(1) for x in batch])
-        max_wav_len = max([x[2].size(1) for x in batch])
+        max_spec_len = max([x[1].size(1) if x[1].dim() > 1 else 1 for x in batch])
+        max_wav_len = max([x[2].size(1) if x[2].dim() > 1 else 1 for x in batch])
 
         text_lengths = torch.LongTensor(len(batch))
         spec_lengths = torch.LongTensor(len(batch))
@@ -136,6 +136,7 @@ class TextAudioCollate():
         text_padded.zero_()
         spec_padded.zero_()
         wav_padded.zero_()
+
         for i in range(len(ids_sorted_decreasing)):
             row = batch[ids_sorted_decreasing[i]]
 
@@ -144,16 +145,24 @@ class TextAudioCollate():
             text_lengths[i] = text.size(0)
 
             spec = row[1]
-            spec_padded[i, :, :spec.size(1)] = spec
+            if spec.dim() > 1:  # Ensure spec has at least 2 dimensions
+                spec_padded[i, :, :spec.size(1)] = spec
+            else:
+                # Handle the case where spec might be 1D
+                spec_padded[i, :, 0] = spec.unsqueeze(0)  # Adjust as needed
             spec_lengths[i] = spec.size(1)
 
             wav = row[2]
-            wav_padded[i, :, :wav.size(1)] = wav
+            if wav.dim() > 1:  # Ensure wav has at least 2 dimensions
+                wav_padded[i, :, :wav.size(1)] = wav
+            else:
+                wav_padded[i, :, 0] = wav.unsqueeze(0)  # Adjust as needed
             wav_lengths[i] = wav.size(1)
 
         if self.return_ids:
             return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths, ids_sorted_decreasing
         return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths
+
 
 
 """Multi speaker version"""
