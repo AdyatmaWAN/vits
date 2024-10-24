@@ -30,9 +30,9 @@ def process_tsv(input_file):
     test_data, val_data = train_test_split(temp_data, test_size=0.5, random_state=42)
 
     # Write the datasets to separate files
-    write_dataset(os.path.join(input_dir, "train.tsv"), train_data['data'].tolist())
-    write_dataset(os.path.join(input_dir, "test.tsv"), test_data['data'].tolist())
-    write_dataset(os.path.join(input_dir, "val.tsv"), val_data['data'].tolist())
+    write_dataset(os.path.join(input_dir, "train.txt"), train_data['data'].tolist())
+    write_dataset(os.path.join(input_dir, "test.txt"), test_data['data'].tolist())
+    write_dataset(os.path.join(input_dir, "val.txt"), val_data['data'].tolist())
 
     print(f"Processed files saved as: train.tsv, test.tsv, val.tsv in {input_dir}")
 
