@@ -145,23 +145,25 @@ class TextAudioCollate():
             text_lengths[i] = text.size(0)
 
             spec = row[1]
-            if spec.dim() > 1:  # Ensure spec has at least 2 dimensions
-                spec_padded[i, :, :spec.size(1)] = spec
+            if spec.dim() == 1:  # If spec is 1D, adjust handling
+                spec = spec.unsqueeze(0)  # Add a channel dimension
+                spec_lengths[i] = 1  # Set length to 1 for a 1D tensor
             else:
-                # Handle the case where spec might be 1D
-                spec_padded[i, :, 0] = spec.unsqueeze(0)  # Adjust as needed
-            spec_lengths[i] = spec.size(1)
+                spec_lengths[i] = spec.size(1)  # Regular case for 2D tensor
+            spec_padded[i, :, :spec.size(1)] = spec
 
             wav = row[2]
-            if wav.dim() > 1:  # Ensure wav has at least 2 dimensions
-                wav_padded[i, :, :wav.size(1)] = wav
+            if wav.dim() == 1:  # If wav is 1D, adjust handling
+                wav = wav.unsqueeze(0)  # Add a channel dimension
+                wav_lengths[i] = 1  # Set length to 1 for a 1D tensor
             else:
-                wav_padded[i, :, 0] = wav.unsqueeze(0)  # Adjust as needed
-            wav_lengths[i] = wav.size(1)
+                wav_lengths[i] = wav.size(1)  # Regular case for 2D tensor
+            wav_padded[i, :, :wav.size(1)] = wav
 
         if self.return_ids:
             return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths, ids_sorted_decreasing
         return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths
+
 
 
 
