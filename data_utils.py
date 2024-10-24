@@ -63,6 +63,9 @@ class TextAudioLoader(torch.utils.data.Dataset):
         spec, wav = self.get_audio(audiopath)
         return (text, spec, wav)
 
+    def __len__(self):
+        return len(self.audiopaths_and_text)
+
 def get_audio(self, filename):
     audio, sampling_rate = load_wav_to_torch(filename)
 
