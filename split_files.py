@@ -9,18 +9,36 @@ def process_tsv(input_file):
     wavs_dir = os.path.join(input_dir, "wavs")
     output_file = input_file.replace('.tsv', '_processed.tsv')
 
-    with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'w', encoding='utf-8') as outfile:
+    # Read the TSV file and process it
+    lines = []
+    with open(input_file, 'r', encoding='utf-8') as infile:
         for line in infile:
-            # Strip any whitespace and split the line into parts
             parts = line.strip().split('\t')
             if len(parts) == 2:
                 file_id = parts[0]
                 text = parts[1]
-                # Create the new formatted line
                 new_line = f"{os.path.join(wavs_dir, f'{file_id}.wav')}|{text}\n"
-                outfile.write(new_line)
+                lines.append(new_line)
 
-    print(f"Processed file saved as: {output_file}")
+    # Convert to DataFrame for easier manipulation
+    df = pd.DataFrame(lines, columns=['data'])
+
+    # Split into train (80%) and temp (20%)
+    train_data, temp_data = train_test_split(df, train_size=0.8, random_state=42)
+
+    # Further split temp_data into test (10%) and validation (10%)
+    test_data, val_data = train_test_split(temp_data, test_size=0.5, random_state=42)
+
+    # Write the datasets to separate files
+    write_dataset(os.path.join(input_dir, "train.tsv"), train_data['data'].tolist())
+    write_dataset(os.path.join(input_dir, "test.tsv"), test_data['data'].tolist())
+    write_dataset(os.path.join(input_dir, "val.tsv"), val_data['data'].tolist())
+
+    print(f"Processed files saved as: train.tsv, test.tsv, val.tsv in {input_dir}")
+
+def write_dataset(file_path, dataset):
+    with open(file_path, 'w', encoding='utf-8') as outfile:
+        outfile.writelines(dataset)
 
 def main():
     if len(sys.argv) != 2:
