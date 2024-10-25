@@ -114,6 +114,11 @@ class TextAudioCollate():
             torch.LongTensor([x[1].size(1) for x in batch]),
             dim=0, descending=True)
 
+        print("batch: ", len(batch))
+        print("each batch: ", len(batch[0]))
+        for i in range(len(batch)):
+            print("batch[{}]: ".format(i), batch[i][0].shape, batch[i][1].shape, batch[i][2].shape)
+
         max_text_len = max([len(x[0]) for x in batch])
         max_spec_len = max([x[1].size(1) for x in batch])
         max_wav_len = max([x[2].size(1) for x in batch])
