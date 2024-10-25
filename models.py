@@ -12,6 +12,7 @@ import monotonic_align
 from torch.nn import Conv1d, ConvTranspose1d, AvgPool1d, Conv2d
 from torch.nn.utils import weight_norm, remove_weight_norm, spectral_norm
 from commons import init_weights, get_padding
+from utils import logger
 
 
 class StochasticDurationPredictor(nn.Module):
@@ -232,10 +233,7 @@ class PosteriorEncoder(nn.Module):
     self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
   def forward(self, x, x_lengths, g=None):
-    print()
-    print("shape of x: ", x.shape)
-    print(len(x))
-    print()
+    logger.debug(f"x: {x.shape}, x_lengths: {x_lengths}")
     x_mask = torch.unsqueeze(commons.sequence_mask(x_lengths, x.size(2)), 1).to(x.dtype)
     x = self.pre(x) * x_mask
     x = self.enc(x, x_mask, g=g)
