@@ -133,8 +133,14 @@ class TextAudioCollate():
         text_padded.zero_()
         spec_padded.zero_()
         wav_padded.zero_()
+
+        print("padded shapes: ", text_padded.shape, spec_padded.shape, wav_padded.shape)
+
         for i in range(len(ids_sorted_decreasing)):
             row = batch[ids_sorted_decreasing[i]]
+
+            print("row shapes: ", row[0].shape, row[1].shape, row[2].shape)
+            print()
 
             text = row[0]
             text_padded[i, :text.size(0)] = text
