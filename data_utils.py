@@ -117,52 +117,92 @@ class TextAudioCollate():
         ------
         batch: [text_normalized, spec_normalized, wav_normalized]
         """
+        # _, ids_sorted_decreasing = torch.sort(
+        #     torch.LongTensor([x[1].size(1) for x in batch]),
+        #     dim=0, descending=True)
+        #
+        # max_text_len = max([len(x[0]) for x in batch])
+        # max_spec_len = max([x[1].size(1) for x in batch])
+        # max_wav_len = max([x[2].size(1) for x in batch])
+        #
+        # text_lengths = torch.LongTensor(len(batch))
+        # spec_lengths = torch.LongTensor(len(batch))
+        # wav_lengths = torch.LongTensor(len(batch))
+        #
+        # text_padded = torch.LongTensor(len(batch), max_text_len)
+        # spec_padded = torch.FloatTensor(len(batch), batch[0][1].size(0), max_spec_len)
+        # wav_padded = torch.FloatTensor(len(batch), 1, max_wav_len)
+        # text_padded.zero_()
+        # spec_padded.zero_()
+        # wav_padded.zero_()
+        # for i in range(len(ids_sorted_decreasing)):
+        #     row = batch[ids_sorted_decreasing[i]]
+        #
+        #     text = row[0]
+        #     text_padded[i, :text.size(0)] = text
+        #     text_lengths[i] = text.size(0)
+        #
+        #     spec = row[1]
+        #     spec_padded[i, :, :spec.size(1)] = spec
+        #     spec_lengths[i] = spec.size(1)
+        #
+        #     wav = row[2]
+        #     wav_padded[i, :, :wav.size(1)] = wav
+        #     wav_lengths[i] = wav.size(1)
+        #
+        # if self.return_ids:
+        #     return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths, ids_sorted_decreasing
+        # return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths
         # Sort by length (decreasing)
         _, ids_sorted_decreasing = torch.sort(
             torch.LongTensor([x[1].size(1) if x[1].dim() > 1 else 1 for x in batch]),
             dim=0, descending=True)
 
+        print("batch: ", len(batch))
+        print("each batch: ", len(batch[0]))
+        for i in range(len(batch)):
+            print("batch[{}]: ".format(i), batch[i][0].shape, batch[i][1].shape, batch[i][2].shape)
+
         max_text_len = max([len(x[0]) for x in batch])
-        max_spec_len = max([x[1].size(1) if x[1].dim() > 1 else 1 for x in batch])
-        max_wav_len = max([x[2].size(1) if x[2].dim() > 1 else 1 for x in batch])
+        max_spec_len = max([len(x[1]) for x in batch])
+        max_wav_len = max([x[2].size(1) for x in batch])
 
         text_lengths = torch.LongTensor(len(batch))
         spec_lengths = torch.LongTensor(len(batch))
         wav_lengths = torch.LongTensor(len(batch))
 
         text_padded = torch.LongTensor(len(batch), max_text_len)
-        spec_padded = torch.FloatTensor(len(batch), batch[0][1].size(0), max_spec_len)
+        # spec_padded = torch.FloatTensor(len(batch), batch[0][1].size(0), max_spec_len)
+        spec_padded = torch.FloatTensor(len(batch), max_spec_len)
         wav_padded = torch.FloatTensor(len(batch), 1, max_wav_len)
         text_padded.zero_()
         spec_padded.zero_()
         wav_padded.zero_()
 
+        print("padded shapes: ", text_padded.shape, spec_padded.shape, wav_padded.shape)
+
         for i in range(len(ids_sorted_decreasing)):
             row = batch[ids_sorted_decreasing[i]]
+
+            print("row shapes: ", row[0].shape, row[1].shape, row[2].shape)
+            print()
 
             text = row[0]
             text_padded[i, :text.size(0)] = text
             text_lengths[i] = text.size(0)
 
             spec = row[1]
-            if spec.dim() == 1:  # If spec is 1D, adjust handling
-                spec = spec.unsqueeze(0)  # Add a channel dimension
-                spec_lengths[i] = 1  # Set length to 1 for a 1D tensor
-            else:
-                spec_lengths[i] = spec.size(1)  # Regular case for 2D tensor
-            spec_padded[i, :, :spec.size(1)] = spec
+            spec_padded[i, :spec.size(0)] = spec
+            spec_lengths[i] = spec.size(0)
 
             wav = row[2]
-            if wav.dim() == 1:  # If wav is 1D, adjust handling
-                wav = wav.unsqueeze(0)  # Add a channel dimension
-                wav_lengths[i] = 1  # Set length to 1 for a 1D tensor
-            else:
-                wav_lengths[i] = wav.size(1)  # Regular case for 2D tensor
             wav_padded[i, :, :wav.size(1)] = wav
+            wav_lengths[i] = wav.size(1)
 
         if self.return_ids:
             return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths, ids_sorted_decreasing
         return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths
+
 
 
 
