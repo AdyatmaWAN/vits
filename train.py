@@ -13,7 +13,6 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.cuda.amp import autocast, GradScaler
 
-import logging
 import commons
 import utils
 from data_utils import (
@@ -41,9 +40,6 @@ global_step = 0
 
 def main():
   """Assume Single Node Multi GPUs Training Only"""
-  numba_logger = logging.getLogger('numba')
-  numba_logger.setLevel(logging.WARNING)
-
   assert torch.cuda.is_available(), "CPU training is not allowed."
 
   n_gpus = torch.cuda.device_count()
