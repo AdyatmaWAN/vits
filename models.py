@@ -232,7 +232,10 @@ class PosteriorEncoder(nn.Module):
     self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
   def forward(self, x, x_lengths, g=None):
-    print(x.shape)
+    print()
+    print("shape of x: ", x.shape)
+    print(len(x))
+    print()
     x_mask = torch.unsqueeze(commons.sequence_mask(x_lengths, x.size(2)), 1).to(x.dtype)
     x = self.pre(x) * x_mask
     x = self.enc(x, x_mask, g=g)
