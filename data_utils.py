@@ -63,28 +63,28 @@ class TextAudioLoader(torch.utils.data.Dataset):
         spec, wav = self.get_audio(audiopath)
         return (text, spec, wav)
 
-def get_audio(self, filename):
-    audio, sampling_rate = load_wav_to_torch(filename)
+    def get_audio(self, filename):
+        audio, sampling_rate = load_wav_to_torch(filename)
 
-    if sampling_rate != self.sampling_rate:
-        # Resample the audio to the target sampling rate
-        audio = resampy.resample(audio.numpy(), sampling_rate, self.sampling_rate)
-        sampling_rate = self.sampling_rate  # Update the sampling rate to the target one
+        if sampling_rate != self.sampling_rate:
+            # Resample the audio to the target sampling rate
+            audio = resampy.resample(audio.numpy(), sampling_rate, self.sampling_rate)
+            sampling_rate = self.sampling_rate  # Update the sampling rate to the target one
 
-    audio_norm = torch.tensor(audio) / self.max_wav_value
-    audio_norm = audio_norm.unsqueeze(0)
+        audio_norm = torch.tensor(audio) / self.max_wav_value
+        audio_norm = audio_norm.unsqueeze(0)
 
-    spec_filename = filename.replace(".wav", ".spec.pt")
-    if os.path.exists(spec_filename):
-        spec = torch.load(spec_filename)
-    else:
-        spec = spectrogram_torch(audio_norm, self.filter_length,
-                                 self.sampling_rate, self.hop_length, self.win_length,
-                                 center=False)
-        spec = torch.squeeze(spec, 0)
-        torch.save(spec, spec_filename)
+        spec_filename = filename.replace(".wav", ".spec.pt")
+        if os.path.exists(spec_filename):
+            spec = torch.load(spec_filename)
+        else:
+            spec = spectrogram_torch(audio_norm, self.filter_length,
+                                     self.sampling_rate, self.hop_length, self.win_length,
+                                     center=False)
+            spec = torch.squeeze(spec, 0)
+            torch.save(spec, spec_filename)
 
-    return spec, audio_norm
+        return spec, audio_norm
 
 
     def get_text(self, text):
